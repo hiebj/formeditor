@@ -5,8 +5,8 @@
  * cell editor's field.
  * 
  * The form can be configured with any fields desired, and its alignment to the cell can be configured via the
- * #formAlign property. The form will be "saved" when the Editor completes its edit. By default, the fields will be
- * saved directly to the edited row's underlying {@link Ext.data.Model} instance by calling
+ * form's {@link Ext.Component#defaultAlign property}. The form will be "saved" when the Editor completes its edit. By default,
+ * the fields will be saved directly to the edited row's underlying {@link Ext.data.Model} instance by calling
  * {@link Ext.form.Panel#updateRecord}. This behavior can be customized by configuring the FormEditor with
  * overrides for {@link #loadForm} and {@link #saveForm}.
  * 
@@ -21,12 +21,6 @@ Ext.define('Ext.ux.grid.FormEditor', {
 	 * The form to float next to the editor while the editor is active.
 	 */
 	form : null,
-	
-	/**
-	 * @cfg {String} formAlign
-	 * The alignment string to use when showing the form. Defaults to 'tl-bl'.
-	 */
-	formAlign : 'tl-bl',
 	
 	initComponent : function() {
 		if (!this.form.isInstance) {
@@ -66,7 +60,7 @@ Ext.define('Ext.ux.grid.FormEditor', {
 		this.allowBlur = false;
 		if (this.loadForm(this.form, context) !== false) {
 			this.formEditing = true;
-			this.form.showBy(this, this.formAlign);
+			this.form.showBy(this);
 		}
 		this.allowBlur = true;
 	},
@@ -105,7 +99,7 @@ Ext.define('Ext.ux.grid.FormEditor', {
 	 * 
 	 * @param {Ext.form.Panel} form The form
 	 * @param {Object} context The editing context. This is the very same object that is passed as an argument to
-	 *        the {@link Ext.grid.plugin.Editing#edit} event.
+	 *		the {@link Ext.grid.plugin.Editing#edit} event.
 	 */
 	saveForm : function(form, context) {
 		form.getForm().updateRecord(context.record);
@@ -117,20 +111,25 @@ Ext.define('Ext.ux.grid.FormEditor', {
 	 * Prevent blur when the target is within the floating form
 	 */
 	onFieldBlur : function(field, e) {
-		var fieldFocused = this.field.hasFocus || !Ext.isEmpty(this.form.query('[hasFocus]')), active = Ext.Element
-				.getActiveElement(), target = e.getTarget();
-		if (field.inputEl.contains(target)) {
-			// The target of a field's 'blur' should never be the field itself
-			target = e.getRelatedTarget();
-		}
-		if (!fieldFocused) {
-			if (this.contains(active) || this.contains(target)) {
-				// The field has lost focus to another element we own, but the target wasn't a field.
-				// Restore focus to the field.
-				field.focus();
-			} else {
-				this.callParent([ this.field, e ]);
+		if (e) {
+			var fieldFocused = this.field.hasFocus || !Ext.isEmpty(this.form.query('[hasFocus]')),
+				active = Ext.Element.getActiveElement(),
+				target = e.getTarget();
+			if (field.inputEl.contains(target)) {
+				// The target of a field's 'blur' should never be the field itself
+				target = e.getRelatedTarget();
 			}
+			if (!fieldFocused) {
+				if (this.contains(active) || this.contains(target)) {
+					// The field has lost focus to another element we own, but the target wasn't a field.
+					// Restore focus to the field.
+					field.focus();
+				} else {
+					this.callParent([ this.field, e ]);
+				}
+			}
+		} else {
+			this.callParent([ this.field, e ]);
 		}
 	},
 	
