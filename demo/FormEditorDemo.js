@@ -57,8 +57,8 @@ Ext.onReady(function() {
                     var names = Ext.String.trim(context.value).split(' ');
                     if (names.length !== 1) {
                         form.getForm().setValues({
-                            genus: names[0],
-                            species: names[1]
+                            genus: names.splice(0, 1),
+                            species: Ext.String.trim(names.join(' '))
                         });
                     } else {
                         return false;
